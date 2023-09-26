@@ -14,14 +14,8 @@ class Analizer:
         os.chdir(path)
         for f in files:
             if os.path.isfile(f):
-                directory_info.append_file(os.stat(f))
+                directory_info.add_file(f, os.stat(f))
                 continue
-            directory_info.directories.append(Analizer.analyze_directory(f'{path}/{f}'))
+            directory_info.add_directory(Analizer.analyze_directory(f'{path}/{f}'))
             os.chdir(path)
         return directory_info
-
-
-    @staticmethod
-    def analyze_segment(path:str):
-        files = Analizer.analyze_directory(path)
-        return files
