@@ -1,3 +1,4 @@
+from audioop import reverse
 import DirectoryInfo
 import os, shutil
 
