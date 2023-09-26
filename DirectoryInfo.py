@@ -1,9 +1,10 @@
 class DirectoryInfo:
-    def __init__(self, path:str):
+    def __init__(self, path:str, ctime:int):
         self.path = path
         self.files_info = {}
         self.directories = []
         self.size = 0
+        self.ctime = ctime
 
 
     def add_file(self, file_name:str, file_stat):
@@ -14,3 +15,7 @@ class DirectoryInfo:
     def add_directory(self, directory_info):
         self.directories.append(directory_info)
         self.size+=directory_info.size
+
+
+if __name__ == '__main__':
+    pass

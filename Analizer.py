@@ -9,7 +9,7 @@ class Analizer:
 
     @staticmethod
     def analyze_directory(path:str):
-        directory_info = DirectoryInfo.DirectoryInfo(path)
+        directory_info = DirectoryInfo.DirectoryInfo(path, os.stat(path).st_ctime)
         files = os.listdir(path)
         os.chdir(path)
         for f in files:
@@ -19,3 +19,7 @@ class Analizer:
             directory_info.add_directory(Analizer.analyze_directory(f'{path}/{f}'))
             os.chdir(path)
         return directory_info
+
+
+if __name__ == '__main__':
+    pass
