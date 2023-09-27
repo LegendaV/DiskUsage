@@ -1,4 +1,4 @@
-from audioop import reverse
+import sys
 import Analizer
 import os
 import tkinter as tk
@@ -17,7 +17,7 @@ class DiskUsage:
         directories.sort(reverse=True, key=lambda d:d.size)
         for d in directories:
             info = ('-' * space_count + os.path.basename(d.path), round(d.size / 2**20, 5), datetime.fromtimestamp(d.ctime))
-            directoryID = table.insert(parentID, 'end', values=info)
+            directoryID = table.insert(parentID, 'end', values=info, tags=("custom_color",))
             self.insert_directories(d, table, directoryID, space_count+1)
 
         files_data = []
@@ -32,6 +32,8 @@ class DiskUsage:
 
     def run(self):
         path = filedialog.askdirectory()
+        if path == "":
+            sys.exit()
         window = tk.Tk()
         window.geometry("700x500")
         window.title("DiskUsage")
@@ -48,10 +50,10 @@ class DiskUsage:
         table.column("Date", width=200)
 
         table.pack(fill='both', expand=1)
+        table.tag_configure("custom_color", background="yellow")
         main_directory = Analizer.Analizer.analyze_directory(path)
         self.insert_directories(main_directory, table)
 
         window.mainloop()
-
 
 DiskUsage().run()
