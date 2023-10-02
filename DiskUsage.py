@@ -1,15 +1,17 @@
 import sys
+from turtle import width
 import Analizer
 import os
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 from datetime import datetime
+from PIL import ImageTk, Image
 
 
 class DiskUsage:
     def __init__(self):
-        pass
+        self.directory_icon = Image.open(f'Images{os.path.sep}directory_icon.png').resize((15, 15), Image.ANTIALIAS)
 
 
     def insert_directories(self, directory_info, table, parentID="", space_count=0):
@@ -17,7 +19,7 @@ class DiskUsage:
         directories.sort(reverse=True, key=lambda d:d.size)
         for d in directories:
             info = ('-' * space_count + os.path.basename(d.path), round(d.size / 2**20, 5), datetime.fromtimestamp(d.ctime))
-            directoryID = table.insert(parentID, 'end', values=info, tags=("custom_color",))
+            directoryID = table.insert(parentID, 'end', values=info, tags=("custom_color",), image=self.directory_icon)
             self.insert_directories(d, table, directoryID, space_count+1)
 
         files_data = []
@@ -38,16 +40,21 @@ class DiskUsage:
         window.geometry("700x500")
         window.title("DiskUsage")
 
+        self.directory_icon = ImageTk.PhotoImage(self.directory_icon)
+
         columns = ("File", "Size", "Date")
-        table = ttk.Treeview(columns=columns, show='headings')
+        table = ttk.Treeview(columns=columns)
+        style = ttk.Style()
+        style.configure("Treeview", indent=0)
 
         table.heading("File", text="File", anchor='w')
         table.heading("Size", text="Size MB", anchor='w')
         table.heading("Date", text="Date", anchor='w')
 
+        table.column("#0", width=40, minwidth=40, stretch=False)
         table.column("File", width=400)
         table.column("Size", width=100)
-        table.column("Date", width=200)
+        table.column("Date", width=160)
 
         table.pack(fill='both', expand=1)
         table.tag_configure("custom_color", background="yellow")
