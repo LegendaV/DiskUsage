@@ -18,14 +18,14 @@ class DiskUsage:
         directories = directory_info.directories
         directories.sort(reverse=True, key=lambda d:d.size)
         for d in directories:
-            info = ('-' * space_count + os.path.basename(d.path), round(d.size / 2**20, 5), datetime.fromtimestamp(d.ctime))
+            info = ('-' * space_count + os.path.basename(d.path), round(d.size / 2**20, 5), datetime.fromtimestamp(max(d.ctime,0)))
             directoryID = table.insert(parentID, 'end', values=info, tags=("custom_color",), image=self.directory_icon)
             self.insert_directories(d, table, directoryID, space_count+1)
 
         files_data = []
         for f in directory_info.files_info:
             info = directory_info.files_info[f]
-            files_data.append(('-' * space_count + f, round(info.st_size / 2**20, 5), datetime.fromtimestamp(info.st_ctime)))
+            files_data.append(('-' * space_count + f, round(info.st_size / 2**20, 5), datetime.fromtimestamp(max(info.st_ctime,0))))
         files_data.sort(reverse=True, key=lambda x:x[1])
 
         for i in files_data:

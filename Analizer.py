@@ -9,14 +9,20 @@ class Analizer:
 
     @staticmethod
     def analyze_directory(path:str):
-        directory_info = DirectoryInfo.DirectoryInfo(path, os.stat(path).st_ctime)
-        files = os.listdir(path)
-        os.chdir(path)
+        try:
+            directory_info = DirectoryInfo.DirectoryInfo(path, os.stat(path).st_ctime)
+            files = os.scandir(path)
+            os.chdir(path)
+        except:
+            return None
         for f in files:
-            if os.path.isfile(f):
-                directory_info.add_file(f, os.stat(f))
-                continue
-            directory_info.add_directory(Analizer.analyze_directory(f'{path}/{f}'))
+            file_name = f.name
+            if f.is_file():
+                try:
+                    directory_info.add_file(file_name, os.stat(f.name))
+                finally:
+                    continue
+            directory_info.add_directory(Analizer.analyze_directory(f'{path}/{file_name}'))
             os.chdir(path)
         return directory_info
 
