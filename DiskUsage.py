@@ -8,20 +8,25 @@ from tkinter import ttk
 from datetime import datetime
 from PIL import ImageTk, Image
 
+sids = {}
+def get_owner_name(file_path, st_uid):
+    global sids
+
+    if platform.system() == 'Windows':
+        import win32security
+        sid = win32security.GetFileSecurity(file_path, win32security.OWNER_SECURITY_INFORMATION).GetSecurityDescriptorOwner()
+        str_sid = str(sid)
+        if not(str_sid in sids):
+            sids[str_sid] = win32security.LookupAccountSid(None, sid)[0]
+        return sids[str_sid]
+    else:
+        import pwd
+        return pwd.getpwuid(st_uid).pw_name
+
 
 class DiskUsage:
     def __init__(self):
         self.directory_icon = Image.open(f'Images{os.path.sep}directory_icon.png').resize((15, 15), Image.ANTIALIAS)
-
-
-    def get_owner_name(file_path, st_uid):
-            if platform.system() == 'Windows':
-                import win32security
-                sid = win32security.GetFileSecurity(file_path, win32security.OWNER_SECURITY_INFORMATION).GetSecurityDescriptorOwner()
-                return win32security.LookupAccountSid(None, sid)[0]
-            else:
-                import pwd
-                return pwd.getpwuid(st_uid).pw_name
 
 
     def sort_column(treeview:ttk.Treeview, col:int, reverse:bool):
@@ -37,7 +42,7 @@ class DiskUsage:
         directories.sort(reverse=True, key=lambda d:d.size)
         for d in directories:
             info = ('-' * space_count + os.path.basename(d.path),#Filename
-                    DiskUsage.get_owner_name(d.path, d.file_stat),#Owner
+                    get_owner_name(d.path, d.file_stat),#Owner
                     round(d.size / 2**20, 5),#Size
                     round(d.size/self.main_directory.size, 2) * 100,#%
                     datetime.fromtimestamp(max(d.ctime,0)),#Date
@@ -49,7 +54,7 @@ class DiskUsage:
         for f in directory_info.files_info:
             info = directory_info.files_info[f]
             files_data.append(('-' * space_count + f,
-                               DiskUsage.get_owner_name(os.path.join(directory_info.path, f), info.st_uid),
+                               get_owner_name(os.path.join(directory_info.path, f), info.st_uid),
                                round(info.st_size / 2**20, 5), 
                                round(info.st_size/self.main_directory.size, 2) * 100,
                                datetime.fromtimestamp(max(info.st_ctime,0)),
