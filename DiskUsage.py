@@ -17,7 +17,11 @@ class DiskUsage:
         directories = directory_info.directories
         directories.sort(reverse=True, key=lambda d:d.size)
         for d in directories:
-            info = ('-' * space_count + os.path.basename(d.path), round(d.size / 2**20, 5), round(d.size/self.main_directory.size, 2) * 100, datetime.fromtimestamp(max(d.ctime,0)))
+            info = ('-' * space_count + os.path.basename(d.path),#Filename
+                    round(d.size / 2**20, 5),#Size
+                    round(d.size/self.main_directory.size, 2) * 100,#%
+                    datetime.fromtimestamp(max(d.ctime,0)),#Date
+                    d.child_dir)#Child_dir
             directoryID = table.insert(parentID, 'end', values=info, tags=("custom_color",), image=self.directory_icon)
             self.insert_directories(d, table, directoryID, space_count+1)
 
@@ -41,7 +45,7 @@ class DiskUsage:
 
         self.directory_icon = ImageTk.PhotoImage(self.directory_icon)
 
-        columns = ("File", "Size", "Visual", "Date")
+        columns = ("File", "Size", "Visual", "Date", "Child_dir")
         table = ttk.Treeview(columns=columns)
         style = ttk.Style()
         style.configure("Treeview", indent=0)
@@ -50,12 +54,14 @@ class DiskUsage:
         table.heading("Size", text="Size MB", anchor='w')
         table.heading("Date", text="Date", anchor='w')
         table.heading("Visual", text="%", anchor='w')
+        table.heading("Child_dir", text="Dir", anchor='w')
 
         table.column("#0", width=40, minwidth=40, stretch=False)
-        table.column("File", width=400)
+        table.column("File", width=300)
         table.column("Size", width=100)
         table.column("Date", width=160)
         table.column("Visual", width=50)
+        table.column("Child_dir", width=50)
 
         table.pack(fill='both', expand=1)
         table.tag_configure("custom_color", background="yellow")
