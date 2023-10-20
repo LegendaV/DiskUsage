@@ -10,7 +10,7 @@ class Analizer:
     @staticmethod
     def analyze_directory(path:str):
         try:
-            directory_info = DirectoryInfo.DirectoryInfo(path, os.stat(path).st_ctime)
+            directory_info = DirectoryInfo.DirectoryInfo(path, os.stat(path))
             files = os.scandir(path)
             os.chdir(path)
         except:

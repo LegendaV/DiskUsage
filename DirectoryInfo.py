@@ -1,10 +1,11 @@
 class DirectoryInfo:
-    def __init__(self, path:str, ctime:int):
+    def __init__(self, path:str, file_stat):
         self.path = path
         self.files_info = {}
         self.directories = []
         self.size = 0
-        self.ctime = ctime
+        self.file_stat = file_stat
+        self.ctime = file_stat.st_ctime
         self.child_dir = 0
 
     

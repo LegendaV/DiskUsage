@@ -1,6 +1,7 @@
 import sys
 import Analizer
 import os
+import platform
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
@@ -13,11 +14,22 @@ class DiskUsage:
         self.directory_icon = Image.open(f'Images{os.path.sep}directory_icon.png').resize((15, 15), Image.ANTIALIAS)
 
 
+    def get_owner_name(file_path, st_uid):
+            if platform.system() == 'Windows':
+                import win32security
+                sid = win32security.GetFileSecurity(file_path, win32security.OWNER_SECURITY_INFORMATION).GetSecurityDescriptorOwner()
+                return win32security.LookupAccountSid(None, sid)[0]
+            else:
+                import pwd
+                return pwd.getpwuid(st_uid).pw_name
+
+
     def insert_directories(self, directory_info, table, parentID="", space_count=0):
         directories = directory_info.directories
         directories.sort(reverse=True, key=lambda d:d.size)
         for d in directories:
             info = ('-' * space_count + os.path.basename(d.path),#Filename
+                    DiskUsage.get_owner_name(d.path, d.file_stat),
                     round(d.size / 2**20, 5),#Size
                     round(d.size/self.main_directory.size, 2) * 100,#%
                     datetime.fromtimestamp(max(d.ctime,0)),#Date
@@ -28,7 +40,12 @@ class DiskUsage:
         files_data = []
         for f in directory_info.files_info:
             info = directory_info.files_info[f]
-            files_data.append(('-' * space_count + f, round(info.st_size / 2**20, 5), round(info.st_size/self.main_directory.size, 2) * 100, datetime.fromtimestamp(max(info.st_ctime,0))))
+            files_data.append(('-' * space_count + f,
+                               DiskUsage.get_owner_name(os.path.join(directory_info.path, f), info.st_uid),
+                               round(info.st_size / 2**20, 5), 
+                               round(info.st_size/self.main_directory.size, 2) * 100,
+                               datetime.fromtimestamp(max(info.st_ctime,0)),
+                              ''))
         files_data.sort(reverse=True, key=lambda x:x[1])
 
         for i in files_data:
@@ -45,19 +62,21 @@ class DiskUsage:
 
         self.directory_icon = ImageTk.PhotoImage(self.directory_icon)
 
-        columns = ("File", "Size", "Visual", "Date", "Child_dir")
+        columns = ("File", "Owner", "Size", "Visual", "Date", "Child_dir")
         table = ttk.Treeview(columns=columns)
         style = ttk.Style()
         style.configure("Treeview", indent=0)
 
         table.heading("File", text="File", anchor='w')
+        table.heading("Owner", text="Owner", anchor='w')
         table.heading("Size", text="Size MB", anchor='w')
         table.heading("Date", text="Date", anchor='w')
         table.heading("Visual", text="%", anchor='w')
         table.heading("Child_dir", text="Dir", anchor='w')
 
         table.column("#0", width=40, minwidth=40, stretch=False)
-        table.column("File", width=300)
+        table.column("File", width=200)
+        table.column("Owner", width=100)
         table.column("Size", width=100)
         table.column("Date", width=160)
         table.column("Visual", width=50)
