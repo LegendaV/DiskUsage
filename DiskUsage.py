@@ -24,12 +24,20 @@ class DiskUsage:
                 return pwd.getpwuid(st_uid).pw_name
 
 
+    def sort_column(treeview:ttk.Treeview, col:int, reverse:bool):
+            l = [(treeview.set(k, col), k) for k in treeview.get_children("")]
+            l.sort(reverse=reverse)
+            for index,  (_, k) in enumerate(l):
+                treeview.move(k, "", index)
+            treeview.heading(col, command=lambda: DiskUsage.sort_column(treeview, col, not reverse))
+
+
     def insert_directories(self, directory_info, table, parentID="", space_count=0):
         directories = directory_info.directories
         directories.sort(reverse=True, key=lambda d:d.size)
         for d in directories:
             info = ('-' * space_count + os.path.basename(d.path),#Filename
-                    DiskUsage.get_owner_name(d.path, d.file_stat),
+                    DiskUsage.get_owner_name(d.path, d.file_stat),#Owner
                     round(d.size / 2**20, 5),#Size
                     round(d.size/self.main_directory.size, 2) * 100,#%
                     datetime.fromtimestamp(max(d.ctime,0)),#Date
@@ -67,12 +75,12 @@ class DiskUsage:
         style = ttk.Style()
         style.configure("Treeview", indent=0)
 
-        table.heading("File", text="File", anchor='w')
-        table.heading("Owner", text="Owner", anchor='w')
-        table.heading("Size", text="Size MB", anchor='w')
-        table.heading("Date", text="Date", anchor='w')
-        table.heading("Visual", text="%", anchor='w')
-        table.heading("Child_dir", text="Dir", anchor='w')
+        table.heading("File", text="File", anchor='w', command=lambda: DiskUsage.sort_column(table, columns.index("File"), False))
+        table.heading("Owner", text="Owner", anchor='w', command=lambda: DiskUsage.sort_column(table, columns.index("Owner"), False))
+        table.heading("Size", text="Size MB", anchor='w', command=lambda: DiskUsage.sort_column(table, columns.index("Size"), False))
+        table.heading("Date", text="Date", anchor='w', command=lambda: DiskUsage.sort_column(table, columns.index("Date"), False))
+        table.heading("Visual", text="%", anchor='w', command=lambda: DiskUsage.sort_column(table, columns.index("Visual"), False))
+        table.heading("Child_dir", text="Dir", anchor='w', command=lambda: DiskUsage.sort_column(table, columns.index("Child_dir"), False))
 
         table.column("#0", width=40, minwidth=40, stretch=False)
         table.column("File", width=200)
