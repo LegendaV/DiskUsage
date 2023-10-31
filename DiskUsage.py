@@ -7,6 +7,7 @@ from tkinter import filedialog
 from tkinter import ttk
 from datetime import datetime
 from PIL import ImageTk, Image
+from progress.bar import IncrementalBar
 
 sids = {}
 def get_owner_name(file_path, st_uid):
@@ -97,7 +98,10 @@ class DiskUsage:
 
         table.pack(fill='both', expand=1)
         table.tag_configure("custom_color", background="yellow")
-        self.main_directory = Analizer.Analizer.analyze_directory(path)
+
+        bar = IncrementalBar('Countdown', max = len(os.listdir(path)))
+        self.main_directory = Analizer.Analizer.analyze_directory(path, bar=bar)
+        bar.finish()
         self.insert_directories(self.main_directory, table)
 
         window.mainloop()
